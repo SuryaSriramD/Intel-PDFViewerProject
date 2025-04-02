@@ -24,6 +24,9 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             # Create a key combining IP and path
             key = f"{client_ip}:{path}"
             
+            # Use global request_tracker
+            global request_tracker
+            
             # Check if this request is allowed
             if key in request_tracker:
                 last_request_time = request_tracker[key]

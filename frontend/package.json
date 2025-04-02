@@ -19,9 +19,10 @@
         "lucide-react": "^0.284.0",
         "next": "^14.2.26",
         "pdf-viewer": "file:",
-        "pdfjs-dist": "^5.0.375",
+        "pdfjs-dist": "^3.11.174",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
+        "react-router-dom": "^7.4.1",
         "tailwind-merge": "^1.14.0",
         "tailwindcss-animate": "^1.0.7"
     },

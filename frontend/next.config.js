@@ -43,17 +43,17 @@ const nextConfig = {
         fs.mkdirSync(publicPdfJsPath, { recursive: true });
       }
 
-      // Copy assets - fixing the source path to ensure it exists
+      // Copy assets - using proper paths for v3.x of pdfjs-dist
       config.plugins.push(
         new CopyPlugin({
           patterns: [
-            // Copy worker - try standard location for pdf.worker.js
+            // Copy worker - primary location for v3.x
             {
               from: path.join(nodeModulesPath, 'build', 'pdf.worker.js'),
               to: path.join(publicPdfJsPath, 'pdf.worker.js'),
               noErrorOnMissing: true,
             },
-            // Fallback to alternative locations if the main one doesn't exist
+            // Fallback to other potential locations
             {
               from: path.join(nodeModulesPath, 'legacy', 'build', 'pdf.worker.js'),
               to: path.join(publicPdfJsPath, 'pdf.worker.js'),

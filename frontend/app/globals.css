@@ -2,7 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Add these custom styles for PDF text layer */
+/* Commenting out potentially conflicting text layer styles */
+/*
 .text-layer {
   position: absolute;
   left: 0;
@@ -22,6 +23,7 @@
   cursor: text;
   transform-origin: 0% 0%;
 }
+*/
 
 :root {
   --foreground-rgb: 0, 0, 0;

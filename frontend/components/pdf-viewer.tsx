@@ -782,7 +782,7 @@ export default function PDFViewer({ pdfUrl, pdfId, onJumpToPage }: PDFViewerProp
       <Script src={PDF_LIB_URL} onLoad={handlePdfJsLoad} />
       
     <div 
-      className="flex flex-col h-full w-full overflow-hidden" 
+      className="flex flex-col h-full w-full overflow-hidden relative" 
       ref={containerRef}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
@@ -818,8 +818,8 @@ export default function PDFViewer({ pdfUrl, pdfId, onJumpToPage }: PDFViewerProp
       {/* PDF Viewer */}
       {!loadError && (
           <>
-            {/* Controls */}
-            <div className="bg-gray-100 p-2 flex items-center justify-between border-b">
+            {/* Controls - making it fixed at the top with proper z-index, aligned with toolbar */}
+            <div className="bg-gray-100 p-2 flex items-center justify-between border-b fixed top-12 left-16 right-0 z-30 h-12">
               <div className="flex items-center gap-2">
                 <Button
                   variant="ghost"
@@ -856,8 +856,8 @@ export default function PDFViewer({ pdfUrl, pdfId, onJumpToPage }: PDFViewerProp
               </div>
             </div>
             
-            {/* Canvas container */}
-            <div className="flex-1 overflow-auto relative flex justify-center bg-gray-800">
+            {/* Canvas container - add padding to account for fixed controls */}
+            <div className="flex-1 overflow-auto relative flex justify-center bg-gray-800 pt-12">
               <div className="relative bg-white shadow-md my-4">
                 <canvas ref={canvasRef} className="block" />
                 
@@ -867,11 +867,13 @@ export default function PDFViewer({ pdfUrl, pdfId, onJumpToPage }: PDFViewerProp
                   className="text-layer absolute top-0 left-0"
                   data-page-number={pageNumber}
                   style={{ 
+                    // Ensure text layer is above canvas, but below other interactive elements
+                    zIndex: 5, 
+                    // Make layer visually opaque, but text inside is transparent via CSS
+                    opacity: 1,
                     // Only enable text selection when we're in text selection mode (currentTool === 'none')
                     // Disable text selection when using drawing tools
                     pointerEvents: currentTool === 'none' ? 'auto' : 'none',
-                    zIndex: 2,
-                    opacity: 1, // Make sure text layer is visible
                     userSelect: currentTool === 'none' ? 'text' : 'none'
                   }}
                 />
@@ -922,11 +924,11 @@ export default function PDFViewer({ pdfUrl, pdfId, onJumpToPage }: PDFViewerProp
       )}
       
       {/* Loading indicator */}
-        {(isLoading || (isRendering && !isLoading)) && (
-        <div className="absolute inset-0 flex items-center justify-center bg-white/80 z-50">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-        </div>
-      )}
+         {(isLoading || (isRendering && !isLoading)) && (
+         <div className="absolute inset-0 flex items-center justify-center bg-white/80 z-50">
+           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+         </div>
+       )}
     </div>
     </>
   )

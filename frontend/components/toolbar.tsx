@@ -26,7 +26,8 @@ export default function Toolbar({ toggleAIAssistant, toggleHighlights, showHighl
   }
 
   return (
-    <div className="w-16 bg-white border-r border-gray-200 flex flex-col items-center py-4 gap-2 relative">
+    <div className="w-16 bg-white border-r border-gray-200 flex flex-col items-center gap-2 fixed left-0 top-0 bottom-0 z-20 pt-12">
+      <div className="py-3"></div> {/* Spacer to match page controls height */}
       <TooltipProvider>
         {/* Tool Group Label */}
         <div className="w-full px-2 py-1">
@@ -134,6 +135,47 @@ export default function Toolbar({ toggleAIAssistant, toggleHighlights, showHighl
               <p>Find in Document</p>
             </TooltipContent>
           </Tooltip>
+          
+          {/* Moved Highlights and AI Assistant buttons here */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className={cn(
+                  "rounded-full hover:text-primary hover:bg-primary/10",
+                  showHighlights && "bg-primary/10 text-primary"
+                )}
+                onClick={toggleHighlights}
+              >
+                <List size={20} />
+                <span className="sr-only">Highlights Panel</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              <p>Highlights Panel</p>
+            </TooltipContent>
+          </Tooltip>
+          
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className={cn(
+                  "rounded-full hover:text-primary hover:bg-primary/10",
+                  showAIAssistant && "bg-primary/10 text-primary"
+                )}
+                onClick={toggleAIAssistant}
+              >
+                <MessageSquare size={20} />
+                <span className="sr-only">AI Assistant</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              <p>AI Assistant</p>
+            </TooltipContent>
+          </Tooltip>
         </div>
 
         {currentTool !== "none" && (
@@ -182,48 +224,6 @@ export default function Toolbar({ toggleAIAssistant, toggleHighlights, showHighl
             </Tooltip>
           </div>
         )}
-
-        <div className="mt-auto flex flex-col gap-4">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className={cn(
-                  "rounded-full hover:text-primary hover:bg-primary/10",
-                  showHighlights && "bg-primary/10 text-primary"
-                )}
-                onClick={toggleHighlights}
-              >
-                <List size={20} />
-                <span className="sr-only">Highlights Panel</span>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="right">
-              <p>Highlights Panel</p>
-            </TooltipContent>
-          </Tooltip>
-          
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className={cn(
-                  "rounded-full hover:text-primary hover:bg-primary/10",
-                  showAIAssistant && "bg-primary/10 text-primary"
-                )}
-                onClick={toggleAIAssistant}
-              >
-                <MessageSquare size={20} />
-                <span className="sr-only">AI Assistant</span>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="right">
-              <p>AI Assistant</p>
-            </TooltipContent>
-          </Tooltip>
-        </div>
       </TooltipProvider>
     </div>
   )

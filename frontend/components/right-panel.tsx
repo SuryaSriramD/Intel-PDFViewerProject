@@ -50,7 +50,7 @@ export default function RightPanel({
   }
   
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col pt-24 fixed right-0 top-0 bottom-0 z-20">
       {showHighlights && showAIAssistant && isSplit ? (
         // Split view with both highlights and AI assistant
         <div className="h-full flex flex-col">

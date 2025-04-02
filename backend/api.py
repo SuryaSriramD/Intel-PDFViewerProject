@@ -262,6 +262,79 @@ async def get_pdf_info(pdf_id: str):
             detail=f"Error getting PDF info: {str(e)}"
         )
 
+# Get all uploaded PDFs
+@router.get("/pdfs/all/")
+async def get_all_pdfs():
+    """Get a list of all uploaded PDFs"""
+    try:
+        # Find all files in GridFS
+        cursor = fs.find({})
+        files = []
+        
+        # Process each file in the cursor
+        async for grid_out in cursor:
+            try:
+                # Safely extract metadata with proper checks
+                if grid_out and hasattr(grid_out, 'metadata') and grid_out.metadata:
+                    files.append({
+                        "pdf_id": str(grid_out._id),
+                        "filename": grid_out.metadata.get("filename", "Untitled PDF"),
+                        "size": grid_out.metadata.get("size", 0),
+                        "upload_date": grid_out.upload_date
+                    })
+                else:
+                    # Handle case where GridFS item has no metadata
+                    files.append({
+                        "pdf_id": str(grid_out._id),
+                        "filename": "Unknown PDF",
+                        "size": 0,
+                        "upload_date": grid_out.upload_date
+                    })
+            except Exception as item_error:
+                logger.error(f"Error processing GridFS item: {str(item_error)}")
+                # Continue processing other items
+                continue
+            
+        return {"pdfs": files}
+    except Exception as e:
+        logger.error(f"Error retrieving all PDFs: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error retrieving all PDFs: {str(e)}"
+        )
+        
+# Delete a PDF
+@router.delete("/pdfs/delete/{pdf_id}")
+async def delete_pdf(pdf_id: str):
+    """Delete a PDF and its related data"""
+    try:
+        # Validate ObjectId
+        if not ObjectId.is_valid(pdf_id):
+            raise HTTPException(status_code=400, detail="Invalid PDF ID format")
+            
+        # Delete from GridFS
+        try:
+            await fs.delete(ObjectId(pdf_id))
+        except Exception as e:
+            logger.error(f"Error deleting PDF from GridFS: {str(e)}")
+            raise HTTPException(status_code=404, detail="PDF not found or already deleted")
+            
+        # Delete related highlights
+        await highlights_collection.delete_many({"pdf_id": pdf_id})
+        
+        # Delete from history
+        await pdf_history_collection.delete_many({"pdf_id": pdf_id})
+        
+        return {"message": "PDF and related data deleted successfully"}
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        logger.error(f"Error deleting PDF: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error deleting PDF: {str(e)}"
+        )
+
 # ----- HIGHLIGHTS ROUTES -----
 
 # Highlight Models
@@ -280,10 +353,27 @@ class SingleHighlight(BaseModel):
 # Save Highlights
 @router.post("/highlights/")
 async def save_highlight(data: Highlight):
-    """Save highlights for a specific PDF"""
+    """Save or update highlights for a specific PDF and user"""
     try:
         highlight_data = data.dict()
-        await highlights_collection.insert_one(highlight_data)
+        pdf_id = highlight_data.get("pdf_id")
+        user_id = highlight_data.get("user_id", "default-user") # Use default if not provided
+        new_highlights = highlight_data.get("highlights", [])
+
+        if not pdf_id:
+            raise HTTPException(status_code=400, detail="Missing pdf_id")
+
+        # Update the document for the given pdf_id and user_id,
+        # replacing the highlights array entirely. Create if not found.
+        await highlights_collection.update_one(
+            {"pdf_id": pdf_id, "user_id": user_id},
+            {"$set": {"highlights": new_highlights, "pdf_id": pdf_id, "user_id": user_id}},
+            upsert=True
+        )
+        
+        # Log the operation
+        logger.info(f"Highlights updated/saved for PDF {pdf_id}, User {user_id}. Count: {len(new_highlights)}")
+        
         return {"message": "Highlights saved successfully"}
     except Exception as e:
         logger.error(f"Error saving highlights: {str(e)}")
